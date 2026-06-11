@@ -8,23 +8,34 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Rastreio Online" />
   <meta name="theme-color" content="#1565C0" />
+  <meta name="description" content="Rastreio Online — Plataforma de rastreamento veicular em tempo real." />
 
   <title>Rastreio Online</title>
 
+  <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
+
+  <!-- Favicon e Apple Touch Icons -->
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png" />
 
+  <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <style>
+    /* ─── Reset & Base ──────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --blue:        #1565C0;
       --blue-light:  #1976D2;
+      --blue-dark:   #0D47A1;
+      --green:       #8BC34A;
+      --green-dark:  #7CB342;
       --white:       #FFFFFF;
       --bg:          #F5F7FA;
       --text:        #1A2332;
@@ -36,256 +47,1107 @@
     }
 
     html, body {
-      width: 100%; height: 100%; overflow: hidden;
-      font-family: 'Inter', sans-serif; background: var(--bg);
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
     }
 
-    #app { position: fixed; inset: 0; width: 100vw; height: 100vh; }
+    /* ─── App Container ─────────────────────────────────────────── */
+    #app {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+    }
 
-    /* SPLASH SCREEN */
+    /* ─── Splash Screen ─────────────────────────────────────────── */
     #splash {
-      position: absolute; inset: 0; z-index: 200; background: var(--white);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: absolute;
+      inset: 0;
+      z-index: 200;
+      background: var(--white);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
       transition: opacity 0.5s ease, visibility 0.5s ease;
     }
-    #splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
-    .progress-bar { position: absolute; top: 0; left: 0; width: 100%; height: 3px; overflow: hidden; }
+    #splash.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .progress-bar {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 3px;
+      overflow: hidden;
+    }
     .progress-bar::after {
-      content: ''; display: block; width: 40%; height: 100%;
-      background: linear-gradient(90deg, var(--blue), #8BC34A);
+      content: '';
+      display: block;
+      width: 40%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--green));
       animation: progress-slide 1.6s ease-in-out infinite;
+      border-radius: 0 2px 2px 0;
     }
     @keyframes progress-slide {
       0%   { transform: translateX(-100%); }
       100% { transform: translateX(350%); }
     }
 
-    .splash-brand { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 32px; }
-    .splash-logo-ring {
-      width: 88px; height: 88px; border-radius: 22px;
-      background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
-      display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 32px var(--shadow-blue);
+    .splash-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 56px;
+      animation: fade-up 0.6s ease both;
     }
-    .splash-logo-ring svg { width: 48px; height: 48px; }
-    .splash-name { font-size: 26px; font-weight: 700; color: var(--blue); }
-    .splash-name span { color: #8BC34A; }
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
 
-    /* LOGIN SCREEN */
-    #login-screen {
-      position: absolute; inset: 0; z-index: 100; background: var(--bg);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 24px; transition: opacity 0.45s ease, visibility 0.45s ease;
+    .splash-logo-ring {
+      width: 88px;
+      height: 88px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 32px var(--shadow-blue);
     }
-    #login-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    .splash-logo-ring svg {
+      width: 48px;
+      height: 48px;
+    }
+
+    .splash-name {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--blue);
+      text-align: center;
+    }
+    .splash-name span { color: var(--green); }
+
+    .splash-tagline {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+      margin-top: -8px;
+      text-align: center;
+    }
+
+    .spinner-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      animation: fade-up 0.6s 0.2s ease both;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 3px solid rgba(21, 101, 192, 0.15);
+      border-top-color: var(--blue);
+      border-right-color: var(--green);
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .spinner-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .splash-footer {
+      position: absolute;
+      bottom: 32px;
+      font-size: 11px;
+      color: #B0BEC5;
+      letter-spacing: 0.2px;
+    }
+
+    /* ─── Login Screen ──────────────────────────────────────────── */
+    #login-screen {
+      position: absolute;
+      inset: 0;
+      z-index: 100;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      padding-top: env(safe-area-inset-top, 24px);
+      padding-bottom: env(safe-area-inset-bottom, 24px);
+      transition: opacity 0.45s ease, visibility 0.45s ease;
+    }
+
+    #login-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
 
     .login-card {
-      background: var(--white); border-radius: 24px; padding: 40px 32px 36px;
-      width: 100%; max-width: 400px; box-shadow: 0 20px 40px -8px var(--shadow-card);
+      background: var(--white);
+      border-radius: 24px;
+      padding: 40px 32px 36px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow:
+        0 4px 6px -1px rgba(0,0,0,0.05),
+        0 20px 40px -8px var(--shadow-card);
+      animation: card-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(24px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    .card-logo { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 32px; }
+    /* Logo no card */
+    .card-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
     .card-logo-icon {
-      width: 64px; height: 64px; border-radius: 16px;
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
       background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
-      display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px var(--shadow-blue);
-    }
-    .card-logo-icon svg { width: 36px; height: 36px; }
-    .card-brand-name { font-size: 22px; font-weight: 700; color: var(--blue); }
-    .card-brand-name span { color: #8BC34A; }
-    .card-subtitle { font-size: 12px; color: var(--text-muted); }
-
-    .field-group { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
-    .field { display: flex; flex-direction: column; gap: 6px; }
-    .field label { font-size: 12px; font-weight: 600; color: var(--text); text-transform: uppercase; }
-    .field-input-wrap { position: relative; }
-
-    .field input {
-      width: 100%; height: 50px; padding: 0 16px;
-      background: var(--input-bg); border: 1.5px solid var(--border);
-      border-radius: 12px; font-size: 15px; outline: none;
-    }
-    .field input:focus { border-color: var(--blue); background: var(--white); }
-
-    .toggle-pass {
-      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; cursor: pointer; color: var(--text-muted);
-    }
-
-    .btn-login {
-      width: 100%; height: 52px; border: none; border-radius: 14px;
-      background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
-      color: white; font-size: 15px; font-weight: 700; cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       box-shadow: 0 6px 20px var(--shadow-blue);
     }
 
-    /* OVERLAY CONECTANDO */
-    #auth-overlay {
-      position: absolute; inset: 0; z-index: 150; background: var(--white);
-      display: none; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+    .card-logo-icon svg {
+      width: 36px;
+      height: 36px;
     }
+
+    .card-brand-name {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      color: var(--blue);
+    }
+    .card-brand-name span { color: var(--green); }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      margin-top: -4px;
+    }
+
+    /* Campos */
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .field-input-wrap {
+      position: relative;
+    }
+
+    .field-input-wrap .field-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+
+    .field input {
+      width: 100%;
+      height: 50px;
+      padding: 0 14px 0 44px;
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .field input::placeholder { color: #B0BEC5; }
+
+    .field input:focus {
+      border-color: var(--blue);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.12);
+    }
+
+    .field input:focus + .field-icon,
+    .field-input-wrap:focus-within .field-icon {
+      color: var(--blue);
+    }
+
+    /* Reorganiza: ícone before input usando CSS sibling trick — usamos wrapper */
+    .field-input-wrap svg.field-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    /* Toggle de senha */
+    .toggle-pass {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+    }
+    .toggle-pass:hover { color: var(--blue); }
+
+    /* Botão principal */
+    .btn-login {
+      width: 100%;
+      height: 52px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px var(--shadow-blue);
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-login:active {
+      transform: scale(0.98);
+      box-shadow: 0 3px 10px var(--shadow-blue);
+    }
+
+    .btn-login:disabled {
+      opacity: 0.75;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-login-inner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* Estado de carregamento do botão */
+    .btn-spinner {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    .btn-login.loading .btn-spinner { display: block; }
+    .btn-login.loading .btn-text-static { display: none; }
+
+    /* Alerta de erro */
+    .login-alert {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(139, 195, 74, 0.1);
+      border: 1.5px solid var(--green);
+      display: none;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .login-alert.visible { display: flex; }
+    .login-alert.error {
+      background: rgba(229, 57, 53, 0.08);
+      border-color: #E53935;
+    }
+
+    .alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    .alert-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    /* Rodapé do card */
+    .card-footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 11px;
+      color: #B0BEC5;
+      letter-spacing: 0.2px;
+    }
+
+    /* ─── Tela de Autenticação (overlay) ────────────────────────── */
+    #auth-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 150;
+      background: rgba(255, 255, 255, 0.96);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      backdrop-filter: blur(4px);
+    }
+
     #auth-overlay.visible { display: flex; }
+
     .auth-spinner {
-      width: 52px; height: 52px; border-radius: 50%;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
       border: 3.5px solid rgba(21, 101, 192, 0.12);
-      border-top-color: var(--blue); border-right-color: #8BC34A;
+      border-top-color: var(--blue);
+      border-right-color: var(--green);
       animation: spin 0.85s linear infinite;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .auth-label { font-size: 15px; font-weight: 600; color: var(--blue); text-align: center; padding: 0 20px; }
 
-    /* IFRAME CONTAINER */
+    .auth-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--blue);
+      letter-spacing: 0.2px;
+    }
+
+    .auth-sublabel {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 400;
+      margin-top: -12px;
+    }
+
+    /* ─── Iframe ────────────────────────────────────────────────── */
     #webview-container {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      opacity: 0; visibility: hidden; pointer-events: none;
-      transition: opacity 0.4s ease;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
     }
+
     #webview-container.visible {
-      opacity: 1 !important; visibility: visible !important; pointer-events: auto !important;
+      opacity: 1;
+      visibility: visible;
     }
-    #webview { width: 100%; height: 100%; border: none; display: block; }
-    
-    .login-alert { margin-top: 16px; padding: 12px; border-radius: 10px; background: rgba(229,57,53,0.08); border: 1.5px solid #E53935; display: none; font-size: 13px; color: #E53935; }
-    .login-alert.visible { display: flex; gap: 10px; }
-    .card-footer { margin-top: 20px; text-align: center; font-size: 11px; color: #B0BEC5; }
+
+    #webview {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* ─── Tela de erro ──────────────────────────────────────────── */
+    #error-screen {
+      display: none;
+      position: absolute;
+      inset: 0;
+      z-index: 50;
+      background: var(--white);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 32px;
+      text-align: center;
+    }
+
+    #error-screen.visible { display: flex; }
+
+    .error-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #FFF3E0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+    }
+
+    .error-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--blue);
+    }
+
+    .error-message {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 320px;
+    }
+
+    .btn-retry {
+      margin-top: 8px;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--blue), var(--blue-light));
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      box-shadow: 0 4px 16px var(--shadow-blue);
+      transition: transform 0.15s, box-shadow 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-retry:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 8px var(--shadow-blue);
+    }
+
+    .btn-open-browser {
+      padding: 10px 24px;
+      border: 2px solid var(--blue);
+      border-radius: 10px;
+      background: transparent;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-open-browser:hover {
+      background: var(--blue);
+      color: white;
+    }
   </style>
 </head>
 <body>
   <div id="app">
 
-    <div id="splash">
+    <!-- ── SPLASH SCREEN ─────────────────────────────────────── -->
+    <div id="splash" role="status" aria-label="Carregando Rastreio Online">
       <div class="progress-bar"></div>
+
       <div class="splash-brand">
         <div class="splash-logo-ring">
-          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="24" cy="20" r="7" fill="white"/>
-            <path d="M24 6C16.27 6 10 12.27 10 20C10 30.5 24 42 24 42C24 42 38 30.5 38 20C38 12.27 31.73 6 24 6Z" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="24" cy="20" r="7" fill="white" opacity="0.95"/>
+            <path d="M24 6C16.27 6 10 12.27 10 20C10 30.5 24 42 24 42C24 42 38 30.5 38 20C38 12.27 31.73 6 24 6Z" stroke="white" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+            <circle cx="24" cy="20" r="3.5" fill="#8BC34A"/>
+            <path d="M16 12 Q24 6 32 12" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <path d="M13 9 Q24 2 35 9" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
           </svg>
         </div>
-        <div class="splash-name">Rastreio<span> Online</span></div>
+        <div>
+          <div class="splash-name">Rastreio<span> Online</span></div>
+          <div class="splash-tagline">Monitoramento em tempo real</div>
+        </div>
       </div>
+
+      <div class="spinner-wrap">
+        <div class="spinner"></div>
+        <span class="spinner-label">Conectando...</span>
+      </div>
+
+      <div class="splash-footer">© 2025 Rastreio Online</div>
     </div>
 
-    <div id="auth-overlay">
+    <!-- ── OVERLAY DE AUTENTICAÇÃO ───────────────────────────── -->
+    <div id="auth-overlay" role="status" aria-label="Autenticando">
       <div class="auth-spinner"></div>
-      <div class="auth-label" id="auth-status-text">Conectando ao mapa em tempo real...</div>
+      <div class="auth-label">Autenticando conta...</div>
+      <div class="auth-sublabel">Por favor, aguarde</div>
     </div>
 
-    <div id="login-screen" class="hidden">
+    <!-- ── LOGIN SCREEN ──────────────────────────────────────── -->
+    <div id="login-screen" class="hidden" role="main" aria-label="Tela de login">
       <div class="login-card">
+
+        <!-- Logo -->
         <div class="card-logo">
           <div class="card-logo-icon">
-            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="24" cy="20" r="7" fill="white"/>
-              <path d="M24 6C16.27 6 10 12.27 10 20C10 30.5 24 42 24 42C24 42 38 30.5 38 20C38 12.27 31.73 6 24 6Z" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle cx="24" cy="20" r="7" fill="white" opacity="0.95"/>
+              <path d="M24 6C16.27 6 10 12.27 10 20C10 30.5 24 42 24 42C24 42 38 30.5 38 20C38 12.27 31.73 6 24 6Z" stroke="white" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+              <circle cx="24" cy="20" r="3.5" fill="#8BC34A"/>
+              <path d="M16 12 Q24 6 32 12" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
             </svg>
           </div>
           <div class="card-brand-name">Rastreio<span> Online</span></div>
-          <div class="card-subtitle">Plataforma de Monitoramento</div>
+          <div class="card-subtitle">Acesse sua conta de rastreamento</div>
         </div>
 
+        <!-- Campos -->
         <div class="field-group">
           <div class="field">
             <label for="login-user">Usuário</label>
             <div class="field-input-wrap">
-              <input type="text" id="login-user" value="santosyuri" placeholder="Digite seu usuário" autocapitalize="none" autocorrect="off">
+              <svg class="field-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <input
+                type="text"
+                id="login-user"
+                name="username"
+                autocomplete="username"
+                placeholder="Digite seu usuário"
+                autocapitalize="none"
+                autocorrect="off"
+                spellcheck="false"
+              />
             </div>
           </div>
 
           <div class="field">
             <label for="login-pass">Senha</label>
             <div class="field-input-wrap">
-              <input type="password" id="login-pass" placeholder="Digite sua senha">
-              <button class="toggle-pass" type="button" onclick="togglePassword()">👁️</button>
+              <svg class="field-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <input
+                type="password"
+                id="login-pass"
+                name="password"
+                autocomplete="current-password"
+                placeholder="Digite sua senha"
+              />
+              <button class="toggle-pass" type="button" aria-label="Mostrar/ocultar senha" onclick="togglePassword()">
+                <svg id="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
             </div>
           </div>
         </div>
 
-        <button class="btn-login" onclick="handleLogin()">Entrar</button>
+        <!-- Botão de login -->
+        <button class="btn-login" id="btn-login" type="button" onclick="handleLogin()">
+          <div class="btn-login-inner">
+            <div class="btn-spinner"></div>
+            <span class="btn-text-static">Entrar</span>
+          </div>
+        </button>
 
-        <div class="login-alert" id="login-alert">
-          <span id="alert-text"></span>
+        <!-- Alerta -->
+        <div class="login-alert" id="login-alert" role="alert">
+          <span class="alert-icon" id="alert-icon">ℹ️</span>
+          <span class="alert-text" id="alert-text"></span>
         </div>
-        <div class="card-footer">© 2026 Rastreio Online</div>
+
+        <div class="card-footer">© 2025 Rastreio Online</div>
       </div>
     </div>
 
-    <div id="webview-container">
-      <iframe id="webview" src="about:blank" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"></iframe>
+    <!-- ── TELA DE ERRO ───────────────────────────────────────── -->
+    <div id="error-screen" role="alert">
+      <div class="error-icon">⚠️</div>
+      <div class="error-title">Não foi possível carregar</div>
+      <p class="error-message">
+        O sistema de rastreamento não pôde ser exibido por restrições de segurança do navegador.<br><br>
+        Verifique sua conexão ou entre em contato com o suporte.
+      </p>
+      <button class="btn-retry" onclick="retryLoad()">Tentar novamente</button>
+      <button class="btn-open-browser" onclick="openInBrowser()">Abrir no navegador</button>
     </div>
 
-  </div>
+    <!-- ── WEBVIEW / IFRAME ──────────────────────────────────── -->
+    <div id="webview-container">
+      <!--
+        NOTA: O iframe aponta para /proxy/ que deve ser configurado no Nginx
+        como proxy reverso para http://www.brgps.com para evitar bloqueio
+        Cross-Origin. Em desenvolvimento local, pode apontar diretamente.
+
+        Nginx config de exemplo:
+          location /proxy/ {
+            proxy_pass http://www.brgps.com/;
+            proxy_set_header Host www.brgps.com;
+            proxy_set_header X-Real-IP $remote_addr;
+          }
+      -->
+      <iframe
+        id="webview"
+        src="about:blank"
+        title="Rastreio Online — Plataforma de Rastreamento"
+        allowfullscreen
+        allow="geolocation; fullscreen"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"
+      ></iframe>
+    </div>
+
+  </div><!-- /#app -->
 
   <script>
     'use strict';
 
-    // Rota direta para forçar a abertura do mapa nativo da BRGPS
-    const MAP_URL = 'http://www.brgps.com/#/tracking'; 
+    // ── Configuração ──────────────────────────────────────────────
+    const TARGET_URL   = 'http://www.brgps.com/#/login';
+    const PROXY_URL    = '/proxy/';
+    const MIN_SPLASH   = 1800; // ms mínimo de splash
 
-    const splash      = document.getElementById('splash');
-    const loginScreen = document.getElementById('login-screen');
-    const authOverlay = document.getElementById('auth-overlay');
-    const webviewCont = document.getElementById('webview-container');
-    const iframe      = document.getElementById('webview');
-    const userInput   = document.getElementById('login-user');
-    const passInput   = document.getElementById('login-pass');
-    const statusText  = document.getElementById('auth-status-text');
+    // ── Seletores da plataforma BRGPS (inspecionados no DOM da plataforma)
+    // Ajuste conforme o HTML real da plataforma se necessário.
+    const BRGPS_SELECTORS = {
+      username: [
+        'input[type="text"][ng-model*="user"]',
+        'input[type="text"][name*="user"]',
+        'input[type="email"]',
+        'input[placeholder*="sário"]',
+        'input[placeholder*="ogin"]',
+        'input[placeholder*="mail"]',
+        'input[type="text"]:first-of-type',
+        'input[type="text"]'
+      ],
+      password: [
+        'input[type="password"]'
+      ],
+      submit: [
+        'button[type="submit"]',
+        'button[ng-click*="login"]',
+        'button[ng-click*="entrar"]',
+        'button[ng-click*="Login"]',
+        'input[type="submit"]',
+        'button:last-of-type'
+      ]
+    };
 
-    let safetyTimeout = null;
+    // ── Referências DOM ───────────────────────────────────────────
+    const splash         = document.getElementById('splash');
+    const loginScreen    = document.getElementById('login-screen');
+    const authOverlay    = document.getElementById('auth-overlay');
+    const webviewCont    = document.getElementById('webview-container');
+    const iframe         = document.getElementById('webview');
+    const errorScreen    = document.getElementById('error-screen');
+    const btnLogin       = document.getElementById('btn-login');
+    const loginAlert     = document.getElementById('login-alert');
+    const alertText      = document.getElementById('alert-text');
+    const alertIcon      = document.getElementById('alert-icon');
+    const userInput      = document.getElementById('login-user');
+    const passInput      = document.getElementById('login-pass');
 
+    const isHTTPS        = location.protocol === 'https:';
+    const splashStart    = performance.now();
+
+    // ── Estado ────────────────────────────────────────────────────
+    let iframeReady      = false;
+    let loginAttempted   = false;
+    let authTimeout      = null;
+
+    // ── 1. Inicialização: Splash → Pre-carrega iframe em background ──
     function init() {
-      setTimeout(() => {
-        splash.classList.add('hidden');
-        loginScreen.classList.remove('hidden');
-      }, 1000);
+      // Carrega o iframe em background sem exibir
+      iframe.src = isHTTPS ? PROXY_URL : TARGET_URL;
+
+      // Timeout geral: se iframe não carregar em 20s, mostra tela de erro
+      const loadTimeout = setTimeout(() => {
+        if (!iframeReady) showError();
+      }, 20000);
+
+      iframe.addEventListener('load', () => {
+        clearTimeout(loadTimeout);
+        iframeReady = true;
+
+        // Verifica bloqueio por mixed content
+        if (isBlankedByMixedContent()) {
+          showError();
+          return;
+        }
+
+        // Splash mínima cumprida?
+        const elapsed = performance.now() - splashStart;
+        const wait    = Math.max(0, MIN_SPLASH - elapsed);
+        setTimeout(showLoginScreen, wait);
+      });
+
+      iframe.addEventListener('error', () => {
+        clearTimeout(loadTimeout);
+        showError();
+      });
     }
 
+    // Detecta se o iframe ficou em branco por mixed-content
+    function isBlankedByMixedContent() {
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        return doc &&
+               doc.body &&
+               doc.body.innerHTML.trim() === '' &&
+               doc.title === '';
+      } catch(e) {
+        // Cross-origin = carregou mas não conseguimos inspecionar — OK
+        return false;
+      }
+    }
+
+    // ── 2. Exibe tela de login nativa ─────────────────────────────
+    function showLoginScreen() {
+      splash.classList.add('hidden');
+      loginScreen.classList.remove('hidden');
+      // Foco automático no campo usuário
+      setTimeout(() => userInput.focus(), 300);
+    }
+
+    // ── 3. Handler do botão "Entrar" ──────────────────────────────
     function handleLogin() {
       const user = userInput.value.trim();
       const pass = passInput.value;
 
-      if (!user || !pass) {
-        document.getElementById('alert-text').textContent = "⚠️ Por favor, preencha todos os campos.";
-        document.getElementById('login-alert').classList.add('visible');
+      // Validação básica
+      if (!user) {
+        showAlert('Por favor, informe seu usuário.', 'warn');
+        userInput.focus();
+        return;
+      }
+      if (!pass) {
+        showAlert('Por favor, informe sua senha.', 'warn');
+        passInput.focus();
         return;
       }
 
-      document.getElementById('login-alert').classList.remove('visible');
-      
-      statusText.textContent = "Conectando ao mapa em tempo real...";
+      hideAlert();
+      setButtonLoading(true);
       authOverlay.classList.add('visible');
 
-      // TRAVA DE SEGURANÇA FORÇADA (Anti-travamento): 
-      // Se em até 5 segundos o iframe sofrer bloqueio silencioso do navegador, 
-      // nós quebramos o carregamento e mostramos o que estiver na tela para não travar o cliente.
-      safetyTimeout = setTimeout(() => {
-        console.warn("Segurança: Forçando a exibição do mapa por limite de tempo.");
-        liberarTelaMapa();
-      }, 5000);
-
-      // Dispara o carregamento do mapa no iframe
-      iframe.src = MAP_URL;
-
-      iframe.addEventListener('load', () => {
-        // Se disparar o evento 'load' normal antes do timeout, limpa o temporizador e abre
-        if (safetyTimeout) {
-          clearTimeout(safetyTimeout);
-          liberarTelaMapa();
-        }
-      });
+      // Injeta as credenciais no iframe e submete
+      injectAndAuthenticate(user, pass);
     }
 
-    function liberarTelaMapa() {
+    // ── 4. Injeção de credenciais no iframe ───────────────────────
+    function injectAndAuthenticate(user, pass) {
+      let attempts = 0;
+      const MAX_ATTEMPTS = 30; // ~6 segundos de tentativas
+      const INTERVAL     = 200;
+
+      const tryInject = setInterval(() => {
+        attempts++;
+
+        if (attempts > MAX_ATTEMPTS) {
+          clearInterval(tryInject);
+          handleAuthFailed('Não foi possível localizar o formulário de login da plataforma. Verifique a configuração do proxy.');
+          return;
+        }
+
+        try {
+          const iframeWin = iframe.contentWindow;
+          const iframeDoc = iframe.contentDocument || iframeWin?.document;
+
+          if (!iframeDoc || iframeDoc.readyState !== 'complete') return;
+
+          // Tenta localizar os campos usando os seletores em ordem de prioridade
+          const usernameField = findElement(iframeDoc, BRGPS_SELECTORS.username);
+          const passwordField = findElement(iframeDoc, BRGPS_SELECTORS.password);
+
+          if (!usernameField || !passwordField) return;
+
+          clearInterval(tryInject);
+
+          // Preenche os campos e dispara eventos reativos (Angular/Vue/React)
+          fillField(iframeWin, usernameField, user);
+          fillField(iframeWin, passwordField, pass);
+
+          // Aguarda um tick para os frameworks processarem antes de submeter
+          setTimeout(() => {
+            const submitBtn = findElement(iframeDoc, BRGPS_SELECTORS.submit);
+
+            if (submitBtn) {
+              submitBtn.click();
+            } else {
+              // Fallback: dispara submit no formulário pai
+              const form = usernameField.closest('form');
+              if (form) {
+                const submitEvent = new iframeWin.Event('submit', { bubbles: true, cancelable: true });
+                form.dispatchEvent(submitEvent);
+              }
+            }
+
+            // Monitora o iframe para detectar quando o mapa carregou
+            watchForMapLoad();
+
+          }, 300);
+
+        } catch(e) {
+          clearInterval(tryInject);
+          handleAuthFailed('Erro de acesso ao iframe. Verifique se o proxy reverso está configurado corretamente.\n\nDetalhe: ' + e.message);
+        }
+
+      }, INTERVAL);
+    }
+
+    // ── Localiza elemento por lista de seletores (primeiro que encontrar) ──
+    function findElement(doc, selectors) {
+      for (const sel of selectors) {
+        try {
+          const el = doc.querySelector(sel);
+          if (el) return el;
+        } catch(e) { /* seletor inválido, tenta próximo */ }
+      }
+      return null;
+    }
+
+    // ── Preenche campo e dispara eventos para frameworks reativos ──
+    function fillField(win, el, value) {
+      const nativeInputValueSetter =
+        win.Object.getOwnPropertyDescriptor(win.HTMLInputElement.prototype, 'value')?.set;
+
+      if (nativeInputValueSetter) {
+        // React: usa o setter nativo para contornar o event pooling
+        nativeInputValueSetter.call(el, value);
+      } else {
+        el.value = value;
+      }
+
+      // Dispara a bateria completa de eventos para cobertura máxima de frameworks
+      const events = ['focus', 'input', 'change', 'blur', 'keyup', 'keydown'];
+      for (const evName of events) {
+        const ev = new win.Event(evName, { bubbles: true, cancelable: true });
+        el.dispatchEvent(ev);
+      }
+
+      // Angular 1.x (ng-model) — ativa o $digest
+      try {
+        const angularEl = win.angular && win.angular.element(el);
+        if (angularEl) {
+          const ngModel = angularEl.data('$ngModelController') ||
+                          angularEl.inheritedData('$ngModelController');
+          if (ngModel) {
+            ngModel.$setViewValue(value);
+            ngModel.$commitViewValue();
+            const scope = angularEl.scope() || angularEl.inheritedData('$scope');
+            if (scope && !scope.$$phase) scope.$apply();
+          }
+        }
+      } catch(e) { /* framework não presente */ }
+
+      // Vue 2/3 — aciona o setter reativo
+      try {
+        const vueProp = el.__vue__ || el._vei;
+        if (vueProp) {
+          el.dispatchEvent(new win.InputEvent('input', { bubbles: true, data: value }));
+        }
+      } catch(e) { /* framework não presente */ }
+    }
+
+    // ── 5. Monitora o iframe aguardando o mapa carregar ───────────
+    function watchForMapLoad() {
+      let watchAttempts = 0;
+      const MAX_WATCH   = 150; // ~30 segundos
+      const WATCH_INTERVAL = 200;
+
+      // Indicadores de sucesso: URL mudou da rota de login, ou mapa apareceu
+      const MAP_SELECTORS = [
+        '#map', '.leaflet-container', '.map-container',
+        'canvas[class*="map"]', '.ol-viewport',
+        '[class*="monitor"]', '[class*="mapa"]',
+        'app-map', 'gps-map', 'leaflet-map'
+      ];
+      const LOGIN_ROUTES = ['#/login', '/login', 'login'];
+
+      authTimeout = setInterval(() => {
+        watchAttempts++;
+
+        if (watchAttempts > MAX_WATCH) {
+          clearInterval(authTimeout);
+          handleAuthFailed('Tempo de autenticação esgotado. Verifique suas credenciais e tente novamente.');
+          return;
+        }
+
+        try {
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+          const iframeHref = iframe.contentWindow?.location?.href || '';
+
+          if (!iframeDoc) return;
+
+          // Saiu da rota de login?
+          const isLoginRoute = LOGIN_ROUTES.some(r => iframeHref.includes(r));
+
+          // Mapa apareceu?
+          const mapFound = MAP_SELECTORS.some(sel => {
+            try { return !!iframeDoc.querySelector(sel); } catch(e) { return false; }
+          });
+
+          // Se saiu do login OU mapa encontrado = autenticado com sucesso
+          if ((!isLoginRoute && watchAttempts > 3) || mapFound) {
+            clearInterval(authTimeout);
+            onAuthSuccess();
+          }
+
+          // Detecta mensagem de erro de credenciais na plataforma
+          const bodyText = iframeDoc.body?.innerText?.toLowerCase() || '';
+          const errorIndicators = [
+            'senha incorreta', 'usuário incorreto', 'inválido', 'invalid',
+            'incorrect', 'wrong', 'não encontrado', 'unauthorized'
+          ];
+          if (errorIndicators.some(e => bodyText.includes(e))) {
+            clearInterval(authTimeout);
+            handleAuthFailed('Usuário ou senha inválidos. Verifique suas credenciais e tente novamente.', true);
+          }
+
+        } catch(e) {
+          // Cross-origin após redirect = geralmente sucesso (saiu do proxy para rota interna)
+          clearInterval(authTimeout);
+          setTimeout(onAuthSuccess, 1500);
+        }
+
+      }, WATCH_INTERVAL);
+    }
+
+    // ── 6. Autenticação bem-sucedida ──────────────────────────────
+    function onAuthSuccess() {
+      setButtonLoading(false);
       authOverlay.classList.remove('visible');
+
+      // Fade-out da tela de login + fade-in do iframe
       loginScreen.classList.add('hidden');
-      webviewCont.classList.add('visible');
+      setTimeout(() => {
+        webviewCont.classList.add('visible');
+      }, 100);
+    }
+
+    // ── 7. Falha na autenticação ──────────────────────────────────
+    function handleAuthFailed(message, isCredentialError = false) {
+      clearInterval(authTimeout);
+      setButtonLoading(false);
+      authOverlay.classList.remove('visible');
+
+      if (isCredentialError) {
+        showAlert(message, 'error');
+        passInput.value = '';
+        passInput.focus();
+      } else {
+        showAlert(message, 'error');
+      }
+    }
+
+    // ── Helpers de UI ─────────────────────────────────────────────
+    function setButtonLoading(loading) {
+      btnLogin.disabled = loading;
+      if (loading) {
+        btnLogin.classList.add('loading');
+      } else {
+        btnLogin.classList.remove('loading');
+      }
+    }
+
+    function showAlert(message, type = 'info') {
+      alertText.textContent = message;
+      alertIcon.textContent = type === 'error' ? '❌' : '⚠️';
+      loginAlert.className  = 'login-alert visible' + (type === 'error' ? ' error' : '');
+    }
+
+    function hideAlert() {
+      loginAlert.classList.remove('visible');
     }
 
     function togglePassword() {
-      passInput.type = passInput.type === 'password' ? 'text' : 'password';
+      const isPass = passInput.type === 'password';
+      passInput.type = isPass ? 'text' : 'password';
+      document.getElementById('eye-icon').style.opacity = isPass ? '0.5' : '1';
     }
 
-    window.addEventListener('DOMContentLoaded', init);
+    function showError() {
+      splash.classList.add('hidden');
+      loginScreen.classList.add('hidden');
+      authOverlay.classList.remove('visible');
+      errorScreen.classList.add('visible');
+    }
+
+    function retryLoad() {
+      errorScreen.classList.remove('visible');
+      loginScreen.classList.add('hidden');
+      splash.classList.remove('hidden');
+      iframeReady = false;
+      iframe.src  = isHTTPS ? PROXY_URL : TARGET_URL;
+    }
+
+    function openInBrowser() {
+      window.open(TARGET_URL, '_blank');
+    }
+
+    // ── Enter nos inputs → submete login ─────────────────────────
+    [userInput, passInput].forEach(el => {
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleLogin();
+      });
+    });
+
+    // ── Registra o Service Worker ─────────────────────────────────
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('[SW] Registrado:', reg.scope))
+        .catch(err => console.warn('[SW] Falhou:', err));
+    }
+
+    // ── Inicia ────────────────────────────────────────────────────
+    init();
   </script>
 </body>
 </html>
