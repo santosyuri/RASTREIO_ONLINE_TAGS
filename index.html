@@ -1,117 +1,430 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Rastreio Online" />
+  <meta name="theme-color" content="#1565C0" />
+  <meta name="description" content="Rastreio Online — Plataforma de rastreamento veicular em tempo real." />
+
   <title>Rastreio Online</title>
-  
-  <!-- Configurações do PWA -->
-  <meta name="theme-color" content="#000000">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" href="icon.png">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Favicon e Apple Touch Icons -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png" />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 
   <style>
-    /* Estilização minimalista de carregamento e fallback */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    /* ─── Reset & Base ──────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:       #1565C0;
+      --blue-light: #1976D2;
+      --green:      #8BC34A;
+      --white:      #FFFFFF;
+      --text-muted: #78909C;
     }
-    body, html {
+
+    html, body {
       width: 100%;
       height: 100%;
-      background-color: #000000;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       overflow: hidden;
-      color: #ffffff;
+      font-family: 'Inter', sans-serif;
+      background: var(--white);
     }
-    .loader-container {
-      text-align: center;
+
+    /* ─── App Container ─────────────────────────────────────────── */
+    #app {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh; /* suporte a dynamic viewport em iOS */
+    }
+
+    /* ─── Splash Screen ─────────────────────────────────────────── */
+    #splash {
+      position: absolute;
+      inset: 0;
+      z-index: 100;
+      background: var(--white);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 20px;
+      justify-content: center;
+      gap: 0;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
     }
+
+    #splash.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    /* Barra de progresso no topo — assinatura visual */
+    .progress-bar {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 3px;
+      overflow: hidden;
+    }
+    .progress-bar::after {
+      content: '';
+      display: block;
+      width: 40%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--green));
+      animation: progress-slide 1.6s ease-in-out infinite;
+      border-radius: 0 2px 2px 0;
+    }
+    @keyframes progress-slide {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(350%); }
+    }
+
+    /* Logo + marca */
+    .splash-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 56px;
+      animation: fade-up 0.6s ease both;
+    }
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .splash-logo-ring {
+      width: 88px;
+      height: 88px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 32px rgba(21, 101, 192, 0.28);
+    }
+
+    /* Ícone SVG de localização/rastreamento inline */
+    .splash-logo-ring svg {
+      width: 48px;
+      height: 48px;
+    }
+
+    .splash-name {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--blue);
+    }
+    .splash-name span {
+      color: var(--green);
+    }
+
+    .splash-tagline {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+      margin-top: -8px;
+    }
+
+    /* Spinner */
+    .spinner-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      animation: fade-up 0.6s 0.2s ease both;
+    }
+
     .spinner {
-      width: 50px;
-      height: 50px;
-      border: 3px solid rgba(255, 255, 255, 0.1);
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      border-top-color: #ffcc00; /* Destaque em amarelo */
-      animation: spin 1s ease-in-out infinite;
-    }
-    .text {
-      font-size: 16px;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      opacity: 0.8;
-    }
-    .btn-manual {
-      display: none;
-      margin-top: 15px;
-      padding: 12px 24px;
-      background-color: #ffcc00;
-      color: #000000;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      text-decoration: none;
-      font-size: 14px;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(255, 204, 0, 0.2);
+      border: 3px solid rgba(21, 101, 192, 0.15);
+      border-top-color: var(--blue);
+      border-right-color: var(--green);
+      animation: spin 0.9s linear infinite;
     }
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+
+    .spinner-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* Footer da splash */
+    .splash-footer {
+      position: absolute;
+      bottom: 32px;
+      font-size: 11px;
+      color: #B0BEC5;
+      letter-spacing: 0.2px;
+    }
+
+    /* ─── Iframe ────────────────────────────────────────────────── */
+    #webview-container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #webview {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* ─── Tela de erro (Mixed Content / Bloqueio) ───────────────── */
+    #error-screen {
+      display: none;
+      position: absolute;
+      inset: 0;
+      z-index: 50;
+      background: var(--white);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 32px;
+      text-align: center;
+    }
+
+    #error-screen.visible { display: flex; }
+
+    .error-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #FFF3E0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+    }
+
+    .error-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--blue);
+    }
+
+    .error-message {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 320px;
+    }
+
+    .btn-retry {
+      margin-top: 8px;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--blue), var(--blue-light));
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      box-shadow: 0 4px 16px rgba(21, 101, 192, 0.3);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-retry:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 8px rgba(21, 101, 192, 0.2);
+    }
+
+    .btn-open-browser {
+      padding: 10px 24px;
+      border: 2px solid var(--blue);
+      border-radius: 10px;
+      background: transparent;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-open-browser:hover {
+      background: var(--blue);
+      color: white;
+    }
   </style>
 </head>
 <body>
+  <div id="app">
 
-  <div class="loader-container">
-    <div class="spinner" id="loader"></div>
-    <div class="text" id="status-text">Conectando ao sistema de rastreamento...</div>
-    <a href="http://www.brgps.com/#/login" class="btn-manual" id="btn-entrar">Entrar no Sistema</a>
-  </div>
+    <!-- ── SPLASH SCREEN ─────────────────────────────────────── -->
+    <div id="splash" role="status" aria-label="Carregando Rastreio Online">
+      <div class="progress-bar"></div>
+
+      <div class="splash-brand">
+        <div class="splash-logo-ring">
+          <!-- Ícone de rastreamento / localização SVG -->
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="24" cy="20" r="7" fill="white" opacity="0.95"/>
+            <path d="M24 6C16.27 6 10 12.27 10 20C10 30.5 24 42 24 42C24 42 38 30.5 38 20C38 12.27 31.73 6 24 6Z" stroke="white" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+            <circle cx="24" cy="20" r="3.5" fill="#8BC34A"/>
+            <!-- Sinal de rastreamento -->
+            <path d="M16 12 Q24 6 32 12" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <path d="M13 9 Q24 2 35 9" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <div>
+          <div class="splash-name">Rastreio<span> Online</span></div>
+          <div class="splash-tagline">Monitoramento em tempo real</div>
+        </div>
+      </div>
+
+      <div class="spinner-wrap">
+        <div class="spinner"></div>
+        <span class="spinner-label">Conectando...</span>
+      </div>
+
+      <div class="splash-footer">© 2026 Rastreio Online</div>
+    </div>
+
+    <!-- ── TELA DE ERRO (Mixed Content) ─────────────────────── -->
+    <div id="error-screen" role="alert">
+      <div class="error-icon">⚠️</div>
+      <div class="error-title">Não foi possível carregar</div>
+      <p class="error-message">
+        O sistema de rastreamento não pôde ser exibido aqui por restrições de segurança do navegador (HTTP vs HTTPS).<br><br>
+        Tente abrir diretamente no navegador ou entre em contato com o suporte.
+      </p>
+      <button class="btn-retry" onclick="retryLoad()">Tentar novamente</button>
+      <button class="btn-open-browser" onclick="openInBrowser()">Abrir no navegador</button>
+    </div>
+
+    <!-- ── WEBVIEW / IFRAME ──────────────────────────────────── -->
+    <div id="webview-container">
+      <!--
+        NOTA SOBRE MIXED CONTENT:
+        Se o seu PWA estiver em HTTPS e o destino for HTTP, o iframe será
+        bloqueado pelo navegador. Veja o comentário no sw.js sobre como
+        configurar um proxy reverso para resolver isso.
+
+        Para TESTE LOCAL (http://localhost), o iframe funcionará normalmente.
+        Para PRODUÇÃO, use a solução de proxy reverso descrita abaixo.
+      -->
+      <iframe
+        id="webview"
+        src="http://www.brgps.com/#/login"
+        title="Rastreio Online — Plataforma de Rastreamento"
+        allowfullscreen
+        allow="geolocation; fullscreen"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"
+      ></iframe>
+    </div>
+
+  </div><!-- /#app -->
 
   <script>
-    // URL final do sistema de rastreamento
-    const TARGET_URL = "http://www.brgps.com/#/login";
+    const TARGET_URL = 'http://www.brgps.com/#/login';
+    const splash    = document.getElementById('splash');
+    const iframe    = document.getElementById('webview');
+    const errorScreen = document.getElementById('error-screen');
 
-    function iniciarRedirecionamento() {
-      // Executa o redirecionamento imediato para o sistema alvo
-      window.location.href = TARGET_URL;
+    // ── Detecta se o PWA está em HTTPS (produção)
+    const isHTTPS = location.protocol === 'https:';
 
-      // Caso o navegador bloqueie ou demore (fallback de segurança)
+    // ── Se estiver em HTTPS, tenta usar proxy reverso automaticamente
+    if (isHTTPS) {
+      // Troca a URL do iframe pelo proxy reverso local
+      // Configure /proxy/ no seu servidor conforme instruções em sw.js
+      iframe.src = '/proxy/';
+    }
+
+    // ── Timeout: se o iframe demorar >15s, mostra tela de erro
+    let loadTimeout = setTimeout(() => {
+      if (!splash.classList.contains('hidden')) {
+        showError();
+      }
+    }, 15000);
+
+    // ── Iframe carregado com sucesso
+    iframe.addEventListener('load', () => {
+      clearTimeout(loadTimeout);
+
+      // Verifica se o iframe ficou em branco (bloqueio por mixed content)
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (iframeDoc && iframeDoc.body &&
+            iframeDoc.body.innerHTML.trim() === '' &&
+            iframeDoc.title === '') {
+          showError();
+          return;
+        }
+      } catch(e) {
+        // Cross-origin — é esperado e significa que carregou corretamente
+      }
+
+      hideSplash();
+    });
+
+    iframe.addEventListener('error', () => {
+      clearTimeout(loadTimeout);
+      showError();
+    });
+
+    function hideSplash() {
+      // Mínimo de 1.5s para a splash não piscar
+      const MIN_SPLASH = 1500;
+      const elapsed = performance.now();
+      const delay = Math.max(0, MIN_SPLASH - elapsed);
       setTimeout(() => {
-        const statusText = document.getElementById('status-text');
-        const btnEntrar = document.getElementById('btn-entrar');
-        const loader = document.getElementById('loader');
-
-        if (loader) loader.style.display = 'none';
-        if (statusText) statusText.innerText = "Se o redirecionamento não acontecer automaticamente, clique no botão abaixo:";
-        if (btnEntrar) btnEntrar.style.display = 'inline-block';
-      }, 2500);
+        splash.classList.add('hidden');
+      }, delay);
     }
 
-    // Inicializa assim que o DOM estiver pronto
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', iniciarRedirecionamento);
-    } else {
-      iniciarRedirecionamento();
+    function showError() {
+      splash.classList.add('hidden');
+      errorScreen.classList.add('visible');
     }
 
-    // Registro do Service Worker para o PWA (Instalação no celular)
+    function retryLoad() {
+      errorScreen.classList.remove('visible');
+      splash.classList.remove('hidden');
+      iframe.src = isHTTPS ? '/proxy/' : TARGET_URL;
+      loadTimeout = setTimeout(showError, 15000);
+    }
+
+    function openInBrowser() {
+      window.open(TARGET_URL, '_blank');
+    }
+
+    // ── Registra o Service Worker
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then(reg => console.log('Service Worker registrado com sucesso:', reg.scope))
-          .catch(err => console.error('Falha ao registrar o Service Worker:', err));
-      });
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('[SW] Registrado:', reg.scope))
+        .catch(err => console.warn('[SW] Falhou:', err));
     }
   </script>
 </body>
