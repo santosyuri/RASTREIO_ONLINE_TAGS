@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Rastreio Online" />
+  <meta name="theme-color" content="#1565C0" />
+
+  <title>Rastreio Online</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:        #1565C0;
+      --blue-light:  #1976D2;
+      --white:       #FFFFFF;
+      --bg:          #F5F7FA;
+      --text:        #1A2332;
+      --text-muted:  #78909C;
+      --border:      #E3E8EF;
+      --input-bg:    #F8FAFC;
+      --shadow-blue: rgba(21, 101, 192, 0.22);
+      --shadow-card: rgba(26, 35, 50, 0.08);
+    }
+
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'Inter', sans-serif; background: var(--bg);
+    }
+
+    #app { position: fixed; inset: 0; width: 100vw; height: 100vh; }
+
+    /* SPLASH SCREEN */
+    #splash {
+      position: absolute; inset: 0; z-index: 200; background: var(--white);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    #splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    .progress-bar { position: absolute; top: 0; left: 0; width: 100%; height: 3px; overflow: hidden; }
+    .progress-bar::after {
+      content: ''; display: block; width: 40%; height: 100%;
+      background: linear-gradient(90deg, var(--blue), #8BC34A);
+      animation: progress-slide 1.6s ease-in-out infinite;
+    }
+    @keyframes progress-slide {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(350%); }
+    }
+
+    .splash-brand { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 32px; }
+    .splash-logo-ring {
+      width: 88px; height: 88px; border-radius: 22px;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
+      display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 32px var(--shadow-blue);
+    }
+    .splash-logo-ring svg { width: 48px; height: 48px; }
+    .splash-name { font-size: 26px; font-weight: 700; color: var(--blue); }
+    .splash-name span { color: #8BC34A; }
+
+    /* LOGIN SCREEN */
+    #login-screen {
+      position: absolute; inset: 0; z-index: 100; background: var(--bg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 24px; transition: opacity 0.45s ease, visibility 0.45s ease;
+    }
+    #login-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    .login-card {
+      background: var(--white); border-radius: 24px; padding: 40px 32px 36px;
+      width: 100%; max-width: 400px; box-shadow: 0 20px 40px -8px var(--shadow-card);
+    }
+
+    .card-logo { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 32px; }
+    .card-logo-icon {
+      width: 64px; height: 64px; border-radius: 16px;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
+      display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px var(--shadow-blue);
+    }
+    .card-logo-icon svg { width: 36px; height: 36px; }
+    .card-brand-name { font-size: 22px; font-weight: 700; color: var(--blue); }
+    .card-brand-name span { color: #8BC34A; }
+    .card-subtitle { font-size: 12px; color: var(--text-muted); }
+
+    .field-group { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 12px; font-weight: 600; color: var(--text); text-transform: uppercase; }
+    .field-input-wrap { position: relative; }
+
+    .field input {
+      width: 100%; height: 50px; padding: 0 16px;
+      background: var(--input-bg); border: 1.5px solid var(--border);
+      border-radius: 12px; font-size: 15px; outline: none;
+    }
+    .field input:focus { border-color: var(--blue); background: var(--white); }
+
+    .toggle-pass {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--text-muted);
+    }
+
+    .btn-login {
+      width: 100%; height: 52px; border: none; border-radius: 14px;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
+      color: white; font-size: 15px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 6px 20px var(--shadow-blue);
+    }
+
+    /* OVERLAY DE AUTENTICAÇÃO */
+    #auth-overlay {
+      position: absolute; inset: 0; z-index: 150; background: var(--white);
+      display: none; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+    }
+    #auth-overlay.visible { display: flex; }
+    .auth-spinner {
+      width: 52px; height: 52px; border-radius: 50%;
+      border: 3.5px solid rgba(21, 101, 192, 0.12);
+      border-top-color: var(--blue); border-right-color: #8BC34A;
+      animation: spin 0.85s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .auth-label { font-size: 15px; font-weight: 600; color: var(--blue); }
+
+    /* IFRAME CONTAINER (BLINDADO) */
+    #webview-container {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    #webview-container.visible {
+      opacity: 1 !important; visibility: visible !important; pointer-events: auto !important;
+    }
+    #webview { width: 100%; height: 100%; border: none; display: block; }
+    
+    .login-alert { margin-top: 16px; padding: 12px; border-radius: 10px; background: rgba(229,57,53,0.08); border: 1.5px solid #E53935; display: none; font-size: 13px; color: #E53935; }
+    .login-alert.visible { display: flex; gap: 10px; }
+    .card-footer { margin-top: 20px; text-align: center; font-size: 11px; color: #B0BEC5; }
+  </style>
+</head>
+<body>
+  <div id="app">
+
+    <div id="splash">
+      <div class="progress-bar"></div>
+      <div class="splash-brand">
+        <div class="splash-logo-ring">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="24" cy="20" r="7" fill="white"/>
+            <path d="M24 6C16.27 6 10 12.27 10 20C10 30.5 24 42 24 42C24 42 38 30.5 38 20C38 12.27 31.73 6 24 6Z" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="splash-name">Rastreio<span> Online</span></div>
+      </div>
+    </div>
+
+    <div id="auth-overlay">
+      <div class="auth-spinner"></div>
+      <div class="auth-label">Conectando ao sistema de mapas...</div>
+    </div>
+
+    <div id="login-screen" class="hidden">
+      <div class="login-card">
+        <div class="card-logo">
+          <div class="card-logo-icon">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="24" cy="20" r="7" fill="white"/>
+              <path d="M24 6C16.27 6 10 12.27 10 20C10 30.5 24 42 24 42C24 42 38 30.5 38 20C38 12.27 31.73 6 24 6Z" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="card-brand-name">Rastreio<span> Online</span></div>
+          <div class="card-subtitle">Plataforma de Monitoramento</div>
+        </div>
+
+        <div class="field-group">
+          <div class="field">
+            <label for="login-user">Usuário</label>
+            <div class="field-input-wrap">
+              <input type="text" id="login-user" placeholder="Digite seu usuário" autocapitalize="none" autocorrect="off">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="login-pass">Senha</label>
+            <div class="field-input-wrap">
+              <input type="password" id="login-pass" placeholder="Digite sua senha">
+              <button class="toggle-pass" type="button" onclick="togglePassword()">👁️</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-login" onclick="handleLogin()">Entrar</button>
+
+        <div class="login-alert" id="login-alert">
+          <span id="alert-text"></span>
+        </div>
+        <div class="card-footer">© 2026 Rastreio Online</div>
+      </div>
+    </div>
+
+    <div id="webview-container">
+      <iframe id="webview" src="about:blank" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"></iframe>
+    </div>
+
+  </div>
+
+  <script>
+    'use strict';
+
+    // ROTA DO MAPA DIRETO: Evita a rota '/#/login' para a tela deles nunca carregar primeiro
+    const MAP_URL = 'http://www.brgps.com/#/tracking'; 
+
+    const splash      = document.getElementById('splash');
+    const loginScreen = document.getElementById('login-screen');
+    const authOverlay = document.getElementById('auth-overlay');
+    const webviewCont = document.getElementById('webview-container');
+    const iframe      = document.getElementById('webview');
+    const userInput   = document.getElementById('login-user');
+    const passInput   = document.getElementById('login-pass');
+
+    function init() {
+      // Carregamento inicial da janela fake para liberar a sua Splash Screen bonita
+      setTimeout(() => {
+        splash.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
+      }, 1500);
+    }
+
+    function handleLogin() {
+      const user = userInput.value.trim();
+      const pass = passInput.value;
+
+      if (!user || !pass) {
+        document.getElementById('alert-text').textContent = "⚠️ Preencha todos os campos.";
+        document.getElementById('login-alert').classList.add('visible');
+        return;
+      }
+
+      document.getElementById('login-alert').classList.remove('visible');
+      authOverlay.classList.add('visible'); // Trava o ecrã com o seu "Conectando..."
+
+      // MUDANÇA ESTRATÉGICA: Como estamos rodando local, o iframe vai direto para a rota logada
+      // e nós limpamos os overlays simulando a resposta do servidor deles
+      iframe.src = MAP_URL;
+
+      iframe.addEventListener('load', () => {
+        setTimeout(() => {
+          authOverlay.classList.remove('visible');
+          loginScreen.classList.add('hidden');
+          webviewCont.classList.add('visible'); // Abre o mapa limpo na tela toda!
+        }, 2000);
+      });
+    }
+
+    function togglePassword() {
+      passInput.type = passInput.type === 'password' ? 'text' : 'password';
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
