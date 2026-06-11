@@ -119,7 +119,7 @@
       box-shadow: 0 6px 20px var(--shadow-blue);
     }
 
-    /* OVERLAY DE AUTENTICAÇÃO */
+    /* OVERLAY CONECTANDO */
     #auth-overlay {
       position: absolute; inset: 0; z-index: 150; background: var(--white);
       display: none; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
@@ -132,9 +132,9 @@
       animation: spin 0.85s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .auth-label { font-size: 15px; font-weight: 600; color: var(--blue); }
+    .auth-label { font-size: 15px; font-weight: 600; color: var(--blue); text-align: center; padding: 0 20px; }
 
-    /* IFRAME CONTAINER (BLINDADO) */
+    /* IFRAME CONTAINER */
     #webview-container {
       position: absolute; inset: 0; width: 100%; height: 100%;
       opacity: 0; visibility: hidden; pointer-events: none;
@@ -168,7 +168,7 @@
 
     <div id="auth-overlay">
       <div class="auth-spinner"></div>
-      <div class="auth-label">Conectando ao sistema de mapas...</div>
+      <div class="auth-label" id="auth-status-text">Conectando ao mapa em tempo real...</div>
     </div>
 
     <div id="login-screen" class="hidden">
@@ -188,7 +188,7 @@
           <div class="field">
             <label for="login-user">Usuário</label>
             <div class="field-input-wrap">
-              <input type="text" id="login-user" placeholder="Digite seu usuário" autocapitalize="none" autocorrect="off">
+              <input type="text" id="login-user" value="santosyuri" placeholder="Digite seu usuário" autocapitalize="none" autocorrect="off">
             </div>
           </div>
 
@@ -219,7 +219,7 @@
   <script>
     'use strict';
 
-    // ROTA DO MAPA DIRETO: Evita a rota '/#/login' para a tela deles nunca carregar primeiro
+    // Rota direta para forçar a abertura do mapa nativo da BRGPS
     const MAP_URL = 'http://www.brgps.com/#/tracking'; 
 
     const splash      = document.getElementById('splash');
@@ -229,13 +229,15 @@
     const iframe      = document.getElementById('webview');
     const userInput   = document.getElementById('login-user');
     const passInput   = document.getElementById('login-pass');
+    const statusText  = document.getElementById('auth-status-text');
+
+    let safetyTimeout = null;
 
     function init() {
-      // Carregamento inicial da janela fake para liberar a sua Splash Screen bonita
       setTimeout(() => {
         splash.classList.add('hidden');
         loginScreen.classList.remove('hidden');
-      }, 1500);
+      }, 1000);
     }
 
     function handleLogin() {
@@ -243,25 +245,40 @@
       const pass = passInput.value;
 
       if (!user || !pass) {
-        document.getElementById('alert-text').textContent = "⚠️ Preencha todos os campos.";
+        document.getElementById('alert-text').textContent = "⚠️ Por favor, preencha todos os campos.";
         document.getElementById('login-alert').classList.add('visible');
         return;
       }
 
       document.getElementById('login-alert').classList.remove('visible');
-      authOverlay.classList.add('visible'); // Trava o ecrã com o seu "Conectando..."
+      
+      statusText.textContent = "Conectando ao mapa em tempo real...";
+      authOverlay.classList.add('visible');
 
-      // MUDANÇA ESTRATÉGICA: Como estamos rodando local, o iframe vai direto para a rota logada
-      // e nós limpamos os overlays simulando a resposta do servidor deles
+      // TRAVA DE SEGURANÇA FORÇADA (Anti-travamento): 
+      // Se em até 5 segundos o iframe sofrer bloqueio silencioso do navegador, 
+      // nós quebramos o carregamento e mostramos o que estiver na tela para não travar o cliente.
+      safetyTimeout = setTimeout(() => {
+        console.warn("Segurança: Forçando a exibição do mapa por limite de tempo.");
+        liberarTelaMapa();
+      }, 5000);
+
+      // Dispara o carregamento do mapa no iframe
       iframe.src = MAP_URL;
 
       iframe.addEventListener('load', () => {
-        setTimeout(() => {
-          authOverlay.classList.remove('visible');
-          loginScreen.classList.add('hidden');
-          webviewCont.classList.add('visible'); // Abre o mapa limpo na tela toda!
-        }, 2000);
+        // Se disparar o evento 'load' normal antes do timeout, limpa o temporizador e abre
+        if (safetyTimeout) {
+          clearTimeout(safetyTimeout);
+          liberarTelaMapa();
+        }
       });
+    }
+
+    function liberarTelaMapa() {
+      authOverlay.classList.remove('visible');
+      loginScreen.classList.add('hidden');
+      webviewCont.classList.add('visible');
     }
 
     function togglePassword() {
